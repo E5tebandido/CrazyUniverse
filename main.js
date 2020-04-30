@@ -7,14 +7,17 @@ $(function(){
     
     function init(){
         
-        var mapper = {
+        var lightmapper = {
+                'lig-point':THREE.PointLight,
+                'lig-amb' : THREE.AmbientLight
+        }
+        
+        var objectmapper = {
                 'geom-sph': THREE.SphereGeometry,
                 'geom-cir': THREE.CircleGeometry,
                 'geom-plan': THREE.PlaneGeometry,
                 'geom-box': THREE.BoxGeometry,
                 'geom-cyl': THREE.CylinderGeometry,
-                'lig-point':THREE.PointLight,
-                'lig-amb' : THREE.AmbientLight
         }
 
         var objectdata = [
@@ -23,7 +26,10 @@ $(function(){
                 'name':'Earth',
                 'geomkey':"geom-sph",
                 "geomvalues":[40,32,32],
-                'texture':'textures/Tierratexture.jpg',
+                'materialoptions': {
+                    color:'white',
+                    'texture':'textures/Tierratexture.jpg'
+                },
                 'positionx': 400,
                 'positiony': 0,
                 'positionz': 0
@@ -31,8 +37,10 @@ $(function(){
             {
                 'name':'Sun',
                 'geomkey':'geom-sph',
-                "geomvalues":[100,32,32],
-                'texture':'textures/suntexture.jpg',
+                "geomvalues":[100,32,32],                
+                'materialoptions': { 
+                    'texture':'textures/suntexture.jpg'
+                },
                 'positionx': 0,
                 'positiony': 0,
                 'positionz': 0
@@ -41,7 +49,9 @@ $(function(){
                 'name':'Moon',
                 'geomkey':'geom-sph',
                 "geomvalues":[30,32,32],
-                'texture':'textures/moontexture.jpg',
+                'materialoptions': {
+                    'texture':'textures/moontexture.jpg'
+                },
                 'positionx': 700,
                 'positiony': 0,
                 'positionz': 0
@@ -65,26 +75,29 @@ $(function(){
         $("#stage").append(renderer.domElement);
         scene = new THREE.Scene();   
         createCamera();
-        createLight(lightdata,mapper);
-        createFigure(objectdata,mapper);
+        createLight(lightdata,lightmapper);
+        createFigure(objectdata,objectmapper);
         render();   
     }
 
-    function createFigure(pdata,mapper){
-        pdata.forEach(element => {
+    function createFigure(data,mapper){
+        data.forEach(element => {
             let geometry = new mapper[element.geomkey](...element.geomvalues);
-            let texture = new THREE.TextureLoader().load(element.texture);
-            var material = new THREE.MeshBasicMaterial( { map: texture } );
+            if('texture' in element.materialoptions){
+            let texture = new THREE.TextureLoader().load(element.materialoptions.texture);
+            element.materialoptions = Object.assign({map:texture});
+            }
+            var material = new THREE.MeshBasicMaterial( element.materialoptions );
             element.name = new THREE.Mesh(geometry,material);
             scene.add(element.name);
             element.name.position.x = element.positionx;
             element.name.position.y = element.positiony;
-            element.name.position.z = element.positionz;  
+            element.name.position.z = element.positionz; 
         });   
     }
 
-    function createLight(ldata,mapper){
-        ldata.forEach(element =>{
+    function createLight(data,mapper){
+        data.forEach(element =>{
             let light = new mapper[element.lightkey](...element.lightvalue);
             scene.add(light);
         });
