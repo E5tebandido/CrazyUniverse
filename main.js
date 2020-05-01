@@ -1,3 +1,11 @@
+/**
+ ================================================================
+ || - @author Teban18 <https://github.com/Teban18>             ||
+ || - @description creation of planets using generic functions,|| 
+ ||                and moving camera with sin and cos functions||
+ ================================================================
+ */
+
 $(function(){
     var scene;
     var camera;
@@ -30,15 +38,16 @@ $(function(){
                     color:'white',
                     'texture':'textures/Tierratexture.jpg'
                 },
-                'positionx': 400,
+                'positionx': 0,
                 'positiony': 0,
-                'positionz': 0
+                'positionz': 400
             },
             {
                 'name':'Sun',
-                'geomkey':'geom-sph',
+                'geomkey':'geom-box',
                 "geomvalues":[100,32,32],                
                 'materialoptions': { 
+
                     'texture':'textures/suntexture.jpg'
                 },
                 'positionx': 0,
@@ -47,14 +56,14 @@ $(function(){
             },
             {
                 'name':'Moon',
-                'geomkey':'geom-sph',
+                'geomkey':'geom-cyl',
                 "geomvalues":[30,32,32],
                 'materialoptions': {
                     'texture':'textures/moontexture.jpg'
                 },
-                'positionx': 700,
+                'positionx':0,
                 'positiony': 0,
-                'positionz': 0
+                'positionz':  700
             }
         ];
         
@@ -62,12 +71,12 @@ $(function(){
             {
                 'name':'pointlight',
                 'lightkey':'lig-point',
-                'lightvalue':[0xffffff, 4]
+                'lightvalue':[0xffffff, 0.8]
             },
             {
                 'name':'ambientlight',
                 'lightkey': 'lig-amb',
-                'lightvalue':[0xffffff, 4]
+                'lightvalue':[0xffffff, 1]
             }
         ];
         renderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
@@ -77,7 +86,9 @@ $(function(){
         createCamera();
         createLight(lightdata,lightmapper);
         createFigure(objectdata,objectmapper);
-        render();   
+        
+            scenerender(1);
+          
     }
 
     function createFigure(data,mapper){
@@ -87,7 +98,7 @@ $(function(){
             let texture = new THREE.TextureLoader().load(element.materialoptions.texture);
             element.materialoptions = Object.assign({map:texture});
             }
-            var material = new THREE.MeshBasicMaterial( element.materialoptions );
+            var material = new THREE.MeshPhongMaterial( element.materialoptions );
             element.name = new THREE.Mesh(geometry,material);
             scene.add(element.name);
             element.name.position.x = element.positionx;
@@ -99,21 +110,24 @@ $(function(){
     function createLight(data,mapper){
         data.forEach(element =>{
             let light = new mapper[element.lightkey](...element.lightvalue);
+            light.name = element.name;
             scene.add(light);
         });
     }  
 
     function createCamera(){
         camera = new THREE.PerspectiveCamera(120, window.innerWidth / window.innerHeight , 0.1 , 1000);
-        camera.position.z = 0;
-        camera.position.y = 400;
+        camera.position.z = 800;
+        camera.position.y = 0;
         camera.position.x = 0;
-        control = new THREE.OrbitControls(camera);
     }
 
-    function render(){
-        requestAnimationFrame( render );
-        control.update();
+    function scenerender(time){
+        requestAnimationFrame( scenerender );
+        camera.position.z = 1100 * Math.cos(time * 0.0005);
+        camera.position.x = 200 * Math.sin(time * 0.005);
         renderer.render( scene , camera );
+        
+        
     }
 })
